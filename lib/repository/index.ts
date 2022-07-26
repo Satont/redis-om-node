@@ -45,6 +45,9 @@ import { EntityData } from "../entity/entity-data";
  *
  * @template TEntity The type of {@link Entity} that this repository manages.
  */
+
+type Values<T> = Omit<Pick<T, { [K in keyof T]: T[K] extends Function ? never : K }[keyof T]>, 'entityId' | 'keyName'>;
+
 export abstract class Repository<TEntity extends Entity> {
   protected client: Client;
   protected schema: Schema<TEntity>;
@@ -105,9 +108,9 @@ export abstract class Repository<TEntity extends Entity> {
    * @param data Optional values with which to initialize the entity.
    * @returns A newly created Entity.
    */
-  createEntity(data: EntityData = {}): TEntity {
-    const id = this.schema.generateId();
-    return new this.schema.entityCtor(this.schema, id, data);
+  createEntity(data: Values<TEntity>, entityId?: string): TEntity {
+    const id = entityId ?? this.schema.generateId();
+    return new this.schema.entityCtor(this.schema, id, data as unknown as EntityData);
   }
 
   /**
@@ -127,8 +130,8 @@ export abstract class Repository<TEntity extends Entity> {
    * @param data Optional values with which to initialize the entity.
    * @returns The newly created and saved Entity.
    */
-  async createAndSave(data: EntityData = {}): Promise<TEntity> {
-    const entity = this.createEntity(data);
+  async createAndSave(data: Values<TEntity>, entityId?: string): Promise<TEntity> {
+    const entity = this.createEntity(data, entityId);
     await this.save(entity)
     return entity
   }
