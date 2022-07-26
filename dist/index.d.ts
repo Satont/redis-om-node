@@ -55,7 +55,9 @@ declare abstract class Entity {
      * Converts this {@link Entity} to a JavaScript object suitable for writing to RedisJSON.
      * @internal
      */
-    toRedisJson(): RedisJsonData;
+    toRedisJson(): Omit<Pick<this, {
+        [K in keyof this]: this[K] extends Function ? never : K;
+    }[keyof this]>, 'entityId' | 'keyName'>;
     /**
      * Loads this {@link Entity} from Redis JSON data.
      * @internal

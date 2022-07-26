@@ -90,13 +90,13 @@ export abstract class Entity {
    * Converts this {@link Entity} to a JavaScript object suitable for writing to RedisJSON.
    * @internal
    */
-  toRedisJson(): RedisJsonData {
+  toRedisJson(): Omit<Pick<this, { [K in keyof this]: this[K] extends Function ? never : K }[keyof this]>, 'entityId' | 'keyName'> {
     let data: RedisJsonData = {};
     Object.keys(this.entityFields).forEach(field => {
       const entityField: EntityField = this.entityFields[field];
       data = { ...data, ...entityField.toRedisJson() };
     })
-    return data;
+    return data as any;
   }
 
   /**
